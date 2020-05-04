@@ -68,12 +68,14 @@ G29ForceFeedback::G29ForceFeedback() : m_device_name("/dev/input/event19")
 }
 
 
+// update input event with timer callback
 void G29ForceFeedback::timerCallback(const ros::TimerEvent&)
 {
     updateFfDevice();
 }
 
 
+// update input event with writing information to the event file
 void G29ForceFeedback::updateFfDevice()
 {
     struct input_event event;
@@ -149,6 +151,7 @@ void G29ForceFeedback::updateFfDevice()
 }
 
 
+// get target information of wheel control from ros message
 void G29ForceFeedback::targetCallback(const g29_ff::ForceFeedback &in_target)
 {
     m_target_angle = in_target.angle;
@@ -156,6 +159,7 @@ void G29ForceFeedback::targetCallback(const g29_ff::ForceFeedback &in_target)
 }
 
 
+// initialize force feedback device
 void G29ForceFeedback::initFfDevice()
 {
     // setup device
@@ -255,6 +259,7 @@ void G29ForceFeedback::initFfDevice()
 }
 
 
+// util for initFfDevice()
 int G29ForceFeedback::testBit(int bit, unsigned char *array)
 {
     return ((array[bit / (sizeof(unsigned char) * 8)] >> (bit % (sizeof(unsigned char) * 8))) & 1);
