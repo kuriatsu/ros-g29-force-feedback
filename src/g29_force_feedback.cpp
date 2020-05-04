@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <math.h>
 
-#include "g29_ff/ForceFeedback.h"
+#include "g29_force_feedback/ForceFeedback.h"
 
 class G29ForceFeedback
 {
@@ -22,8 +22,8 @@ private:
 
     // device config
     std::string m_device_name;
-    float m_max_force;
-    float m_min_force;
+    double m_max_force;
+    double m_min_force;
 
     // motion config 0:PID force, 1:constant force
     int m_mode = 0;
@@ -41,7 +41,7 @@ public:
     G29ForceFeedback();
 
 private:
-    void targetCallback(const g29_ff::ForceFeedback &in_target);
+    void targetCallback(const g29_force_feedback::ForceFeedback &in_target);
     void timerCallback(const ros::TimerEvent&);
     int testBit(int bit, unsigned char *array);
     void initFfDevice();
@@ -116,12 +116,21 @@ void G29ForceFeedback::updateFfDevice()
                 // set max force for safety
                 force = (force > 0.0) ? std::min(force, m_target_force) : std::max(force, -m_target_force);
             }
+
             break;
         }
 
         case (1):
         {
             force = fabs(force) * ((diff > 0.0) ? 1.0 : -1.0);
+
+            // if wheel angle reached to the target
+            if (fabs(diff) < m_offset)
+            {
+                force = 0.0;
+                break;
+            }
+
             break;
         }
     }
@@ -152,7 +161,7 @@ void G29ForceFeedback::updateFfDevice()
 
 
 // get target information of wheel control from ros message
-void G29ForceFeedback::targetCallback(const g29_ff::ForceFeedback &in_target)
+void G29ForceFeedback::targetCallback(const g29_force_feedback::ForceFeedback &in_target)
 {
     m_target_angle = in_target.angle;
     m_target_force = in_target.force;
@@ -268,7 +277,7 @@ int G29ForceFeedback::testBit(int bit, unsigned char *array)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "g29_ff_node");
+    ros::init(argc, argv, "g29_force_feedback_node");
     G29ForceFeedback g29_ff;
     ros::spin();
     return(0);
