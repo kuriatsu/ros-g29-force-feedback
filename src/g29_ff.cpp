@@ -26,7 +26,7 @@ private:
     float m_min_force;
 
     // motion config 0:PID force, 1:constant force
-    int m_mode;
+    int m_mode = 0;
     double m_Kp = 1;
     double m_Ki = 0.0;
     double m_Kd = 0.1;
@@ -49,7 +49,7 @@ private:
 };
 
 
-G29ForceFeedback::G29ForceFeedback() : m_device_name("/dev/input/event19"), m_mode(0)
+G29ForceFeedback::G29ForceFeedback() : m_device_name("/dev/input/event19")
 {
     ros::NodeHandle n;
     sub_target = n.subscribe("/ff_target", 1, &G29ForceFeedback::targetCallback, this);
