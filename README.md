@@ -2,15 +2,15 @@ g29_ff
 ====
 
 ## Overview
-Ros package to control force feedback of logicool g29 steering wheel from ros message, written in c++, for human beings all over the world.
+Ros package to control force feedback of logiteck g29 steering wheel from ros message, written in c++, for human beings all over the world.
 This is useful for the user interface of autonomous driving, driving simulator like [CARLA](https://carla.org/), [LGSVL](https://www.lgsvlsimulator.com/) etc.
 
-![logicool g29](https://github.com/kuriatsu/g29_ff/blob/image/images/logicoolg29.png)
+![logiteck g29](https://github.com/kuriatsu/g29_ff/blob/image/images/logicoolg29.png)
 
 ## Features
 * Standalone ros package to control steering wheel. (doesn't depend on the other ros packages like ros-melodic-joy etc.)
 
-* We can control angle of logicool g29 steering wheel with throwing ros message.
+* We can control angle of logiteck g29 steering wheel with throwing ros message.
 
 * Two control modes
     1. PID control mode  
@@ -23,7 +23,7 @@ This is useful for the user interface of autonomous driving, driving simulator l
 
 ## Requirement
 * ros melodic
-* logicool g29
+* logiteck g29
 
 ## Usage
 1. confirm your device name
