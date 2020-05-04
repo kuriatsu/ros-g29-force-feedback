@@ -14,15 +14,13 @@ This is useful for the user interface of autonomous driving, driving simulator l
 
 * Two control modes
     1. PID control mode
-
-    Rotate wheel to the specified angle with PID control.(I controller is now deprecated)
-    This mode is useful for the user interface of autonomous driving system.
-    Control force can be also specified.
+        Rotate wheel to the specified angle with PID control.(I controller is now deprecated)
+        This mode is useful for the user interface of autonomous driving system.
+        Control force can be also specified.
 
     1. Auto centering mode
-
-    Rotate wheel to the center with  specified force.
-    This mode is useful to control vehicle in the driving simulator.
+        Rotate wheel to the center with  specified force.
+        This mode is useful to control vehicle in the driving simulator.
 
 ## Demo
 
