@@ -1,4 +1,4 @@
-g29_ff
+ros-melodic-logiteck-g29-forcefeedback
 ====
 
 ## Overview
