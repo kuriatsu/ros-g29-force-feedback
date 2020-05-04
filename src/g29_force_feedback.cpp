@@ -22,12 +22,12 @@ private:
 
     // device config
     std::string m_device_name;
-    double m_max_force;
-    double m_min_force;
+    double m_max_force = 1.0;
+    double m_min_force = 0.2;
 
     // motion config 0:PID force, 1:constant force
     int m_mode = 0;
-    double m_Kp = 1;
+    double m_Kp = 0.5;
     double m_Ki = 0.0;
     double m_Kd = 0.1;
     double m_offset = 0.01;
@@ -60,6 +60,8 @@ G29ForceFeedback::G29ForceFeedback() : m_device_name("/dev/input/event19")
     n.getParam("Ki", m_Ki);
     n.getParam("Kd", m_Kd);
     n.getParam("offset", m_offset);
+    n.getParam("max_force", m_max_force);
+    n.getParam("min_force", m_min_force);
 
     initFfDevice();
 

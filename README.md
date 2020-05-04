@@ -45,6 +45,8 @@ This is useful for the user interface of autonomous driving, driving simulator l
     |Ki|0.0|I value of PID contol (Deprecated)|
     |Kd|0.1|D value of PID contol|
     |offset|0.01|affordable radian(offset * &pi;) of control|
+    |max_force|1.0|max force|
+    |min_force|0.2|force less than 0.2 cannot turn the wheel (in my case)|
 
 1. Throw message (It's better to use tab completion)  
     ```bash
