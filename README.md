@@ -1,16 +1,16 @@
-ros-melodic-logiteck-g29-forcefeedback
+ros-g29-force-feedback
 ====
 
 ## Overview
-Ros package to control force feedback of logicool g29 steering wheel from ros message, written in c++, for human beings all over the world.
+Ros package to control force feedback of logitech g29 steering wheel from ros message, written in c++, for human beings all over the world.
 This is useful for the user interface of autonomous driving, driving simulator like [CARLA](https://carla.org/), [LGSVL](https://www.lgsvlsimulator.com/) etc.
 
-![logicool g29](https://github.com/kuriatsu/g29_ff/blob/image/images/logicoolg29.png)
+![logitech g29](https://github.com/kuriatsu/ros-g29-force-feedback/blob/image/images/logicoolg29.png)
 
 ## Features
 * Standalone ros package to control steering wheel. (doesn't depend on the other ros packages like ros-melodic-joy etc.)
 
-* We can control angle of logicool g29 steering wheel with throwing ros message.
+* We can control angle of logitech g29 steering wheel with throwing ros message.
 
 * Two control modes
     1. PID control mode  
@@ -23,7 +23,7 @@ This is useful for the user interface of autonomous driving, driving simulator l
 
 ## Requirement
 * ros melodic
-* logicool g29
+* logitech g29
 
 ## Usage
 1. confirm your device name
@@ -35,7 +35,7 @@ This is useful for the user interface of autonomous driving, driving simulator l
 1. run ros node
     ```bash
     $ source /path/to/catkin_ws/devel/setup.bash
-    $ rosrun g29_ff node device_name:=/dev/input/eventxx
+    $ rosrun g29-force-feedback node device_name:=/dev/input/eventxx
     ```
     |option|default|description|
     |:--|:--|:--|
@@ -48,7 +48,7 @@ This is useful for the user interface of autonomous driving, driving simulator l
 
 1. Throw message (It's better to use tab completion)  
     ```bash
-    $ rostopic pub /ff_target g29_ff/ForceFeedback "header:
+    $ rostopic pub /ff_target g29-force-feedback/ForceFeedback "header:
       seq: 0
       stamp:
         secs: 0
@@ -70,13 +70,13 @@ This is useful for the user interface of autonomous driving, driving simulator l
 1. download package
     ```bash
     cd /catkin_ws/src
-    git clone https://github.com/kuriatsu/g29_ff.git
+    git clone https://github.com/kuriatsu/g29-force-feedback.git
     cd ../
     catkin_make
     ```
 
 ## Contribution
-1. Fork it (https://github.com/kuriatsu/g29_ff.git)
+1. Fork it (https://github.com/kuriatsu/g29-force-feedback.git)
 1. Create your feature branch (git checkout -b my-new-feature)
 1. Commit your changes (git commit -am 'Add some feature')
 1. Push to the branch (git push origin my-new-feature)
