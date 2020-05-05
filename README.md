@@ -32,12 +32,8 @@ This is useful for the user interface of autonomous driving, driving simulator l
     ```
     find **Logitech G29 Driving Force Racing Wheel** and check Handlers (ex. eventxx)
 
-1. run ros node
-    ```bash
-    $ source /path/to/catkin_ws/devel/setup.bash
-    $ rosrun g29-force-feedback node device_name:=/dev/input/eventxx
-    ```
-    |option|default|description|
+1. change parameters in **g29_force_feedback.yaml**
+    |parameter|default|description|
     |:--|:--|:--|
     |device_name|/dev/input/event19|device name|
     |mode|0|control mode 0: PID control, 1: Auto centering
@@ -47,6 +43,14 @@ This is useful for the user interface of autonomous driving, driving simulator l
     |offset|0.01|affordable radian(offset * &pi;) of control|
     |max_force|1.0|max force|
     |min_force|0.2|force less than 0.2 cannot turn the wheel (in my case)|
+    |pub_rate|0.1|event update rate (0.1=10Hz)|
+
+1. run ros node
+    ```bash
+    $ source /path/to/catkin_ws/devel/setup.bash
+    $ rosparam load /path/to/catkin_ws/src/g29_force_feedback/g29_force_feedback.yaml
+    $ rosrun g29-force-feedback node
+    ```
 
 1. Throw message (It's better to use tab completion)  
     ```bash

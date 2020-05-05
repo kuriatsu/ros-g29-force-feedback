@@ -12,6 +12,7 @@ class G29ForceFeedback
 private:
     ros::Subscriber sub_target;
     ros::Timer timer;
+    float m_pub_rate;
 
     // variables from fouce feedback API
     int m_device_handle;
@@ -22,15 +23,15 @@ private:
 
     // device config
     std::string m_device_name;
-    double m_max_force = 1.0;
-    double m_min_force = 0.2;
+    double m_max_force;
+    double m_min_force;
 
     // motion config 0:PID force, 1:constant force
-    int m_mode = 0;
-    double m_Kp = 0.5;
-    double m_Ki = 0.0;
-    double m_Kd = 0.1;
-    double m_offset = 0.01;
+    int m_mode;
+    double m_Kp;
+    double m_Ki;
+    double m_Kd;
+    double m_offset;
 
     // target and current state of the wheel
     double m_target_angle;
@@ -49,7 +50,16 @@ private:
 };
 
 
-G29ForceFeedback::G29ForceFeedback() : m_device_name("/dev/input/event19")
+G29ForceFeedback::G29ForceFeedback():
+    m_device_name("/dev/input/event19"),
+    m_mode(0),
+    m_Kp(0.1),
+    m_Ki(0.0),
+    m_Kd(0.0),
+    m_offset(0.01),
+    m_max_force(1.0),
+    m_min_force(0.2),
+    m_pub_rate(0.1)
 {
     ros::NodeHandle n;
     sub_target = n.subscribe("/ff_target", 1, &G29ForceFeedback::targetCallback, this);
@@ -62,11 +72,12 @@ G29ForceFeedback::G29ForceFeedback() : m_device_name("/dev/input/event19")
     n.getParam("offset", m_offset);
     n.getParam("max_force", m_max_force);
     n.getParam("min_force", m_min_force);
+    n.getParam("pub_rate", m_pub_rate);
 
     initFfDevice();
 
     ros::Duration(1).sleep();
-    timer = n.createTimer(ros::Duration(0.1), &G29ForceFeedback::timerCallback, this);
+    timer = n.createTimer(ros::Duration(m_pub_rate), &G29ForceFeedback::timerCallback, this);
 }
 
 

@@ -1,0 +1,9 @@
+device_name: "/dev/input/event19"
+mode: 0
+Kp: 1.0
+Ki: 0.0
+Kd: 0.2
+offset: 0.01
+max_force: 1.0
+min_force: 0.2
+pub_rate: 0.1
