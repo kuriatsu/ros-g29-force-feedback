@@ -20,7 +20,7 @@ This is useful for the user interface of autonomous driving, driving simulator l
         Rotate wheel to the center with  specified force.This mode is useful to control vehicle in the driving simulator.
 
 ## Demo
-
+![demo_gif](https://github.com/kuriatsu/ros-g29-force-feedback/blob/image/images/force_feedback_test.gif)
 ## Requirement
 * ros melodic
 * logitech g29
