@@ -16,14 +16,24 @@ This is useful for the user interface of autonomous driving, driving simulator l
     1. PID control mode  
         Rotate wheel to the specified angle with PID control.(I controller is now deprecated). This mode is useful for the user interface of autonomous driving system.Control force can be also specified.
 
-    1. Auto centering mode  
-        Rotate wheel to the center with  specified force.This mode is useful to control vehicle in the driving simulator.
+    1. Constant force mode  
+        Rotate wheel to the specified angle with specified constant force. This mode is useful to control vehicle manually in the driving simulator.
 
 ## Demo
 ![demo_gif](https://github.com/kuriatsu/ros-g29-force-feedback/blob/image/images/force_feedback_test.gif)
+
 ## Requirement
+* ubuntu
 * ros melodic
-* logitech g29
+* Logitech G29 Driving Force Racing Wheel
+
+To check whether your kernel supports force feedback, check as follows
+```bash
+$ cat /boot/config-5.3.0-46-generic | grep CONFIG_LOGIWHEELS_FF
+CONFIG_LOGIWHEELS_FF=y
+```  
+If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch...
+
 
 ## Usage
 1. confirm your device name
@@ -63,7 +73,8 @@ This is useful for the user interface of autonomous driving, driving simulator l
     angle: 0.3
     force: 0.6"
     ```
-    Wheel starts to moves to 0.3&pi; radian with 0.6 rotation power.
+    Once the message is thrown, the wheel rotates to 0.3 (from -1.0 to 1.0) with 0.6 rotation power (from 0.0 to 1.0).
+    Publish rate is not restricted.
 
 ## Install
 1. create catkin_ws
