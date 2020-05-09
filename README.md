@@ -27,7 +27,7 @@ This is useful for the user interface of autonomous driving, driving simulator l
 * ros melodic
 * Logitech G29 Driving Force Racing Wheel
 
-To check whether your kernel supports force feedback, check as follows
+To check whether your kernel supports force feedback, do as follows
 ```bash
 $ cat /boot/config-5.3.0-46-generic | grep CONFIG_LOGIWHEELS_FF
 CONFIG_LOGIWHEELS_FF=y
@@ -50,7 +50,7 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch...
     |Kp|1|P value of PID contol|
     |Ki|0.0|I value of PID contol (Deprecated)|
     |Kd|0.1|D value of PID contol|
-    |offset|0.01|affordable radian(offset * &pi;) of control|
+    |offset|0.01|affordable radian(offset * 2.5&pi;) of control|
     |max_force|1.0|max force|
     |min_force|0.2|force less than 0.2 cannot turn the wheel (in my case)|
     |pub_rate|0.1|event update rate (0.1=10Hz)|
@@ -73,7 +73,7 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch...
     angle: 0.3
     force: 0.6"
     ```
-    Once the message is thrown, the wheel rotates to 0.3 (from -1.0 to 1.0) with 0.6 rotation power (from 0.0 to 1.0).
+    Once the message is thrown, the wheel rotates to 0.3*2.5&pi; (from -1.0 to 1.0) with 0.6 rotation power (from 0.0 to 1.0).
     Publish rate is not restricted.
 
 ## Install
