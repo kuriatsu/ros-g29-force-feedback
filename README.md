@@ -40,13 +40,13 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch...
     ```bash
     $ cat /proc/bus/input/devices
     ```
-    find **Logitech G29 Driving Force Racing Wheel** and check Handlers (ex. eventxx)
+    find **Logitech G29 Driving Force Racing Wheel** and check Handlers (ex. event19)
 
 1. change parameters in **g29_force_feedback.yaml**
     |parameter|default|description|
     |:--|:--|:--|
-    |device_name|/dev/input/event19|device name|
-    |mode|0|control mode 0: PID control, 1: Auto centering
+    |device_name|/dev/input/event19|device name, change the number|
+    |mode|0|control mode 0: PID control, 1: Constant force
     |Kp|1|P value of PID contol|
     |Ki|0.0|I value of PID contol (Deprecated)|
     |Kd|0.1|D value of PID contol|
