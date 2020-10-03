@@ -14,10 +14,10 @@ This is useful for the user interface of autonomous driving, driving simulator l
 
 * Two control modes
     1. PID control mode  
-        Rotate wheel to the specified angle with PID control.(I controller is now deprecated). This mode is useful for the user interface of autonomous driving system.Control force can be also specified.
+        Rotate wheel to the specified angle with PID control.(I controller is now deprecated). This mode can rotate wheel to the specified angle with your hands off, so this mode is useful for the user interface of autonomous driving system. Control force can be specified (max force for PID control, the bigger, the more move rapidly).
 
     1. Constant force mode  
-        Rotate wheel to the specified angle with specified constant force. This mode is useful to control vehicle manually in the driving simulator.
+        Rotate wheel to the specified angle with specified constant force. This mode make it easier to control vehicle manually in the driving simulator. If you use with your hands off and rotate force over 0.3, the wheel travels right and left. 
 
 ## Demo
 ![demo_gif](https://github.com/kuriatsu/ros-g29-force-feedback/blob/image/images/force_feedback_test.gif)
@@ -40,19 +40,19 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch...
     ```bash
     $ cat /proc/bus/input/devices
     ```
-    find **Logitech G29 Driving Force Racing Wheel** and check Handlers (ex. eventxx)
+    find **Logitech G29 Driving Force Racing Wheel** and check Handlers (ex. event19)
 
 1. change parameters in **g29_force_feedback.yaml**
     |parameter|default|description|
     |:--|:--|:--|
-    |device_name|/dev/input/event19|device name|
-    |mode|0|control mode 0: PID control, 1: Auto centering
+    |device_name|/dev/input/event19|device name, change the number|
+    |mode|0|control mode 0: PID control, 1: Constant force
     |Kp|1|P value of PID contol|
     |Ki|0.0|I value of PID contol (Deprecated)|
     |Kd|0.1|D value of PID contol|
     |offset|0.01|affordable radian(offset * 2.5&pi;) of control|
     |max_force|1.0|max force|
-    |min_force|0.2|force less than 0.2 cannot turn the wheel (in my case)|
+    |min_force|0.2|0.25 is best! less than 0.2 cannot turn the wheel (in my case)|
     |pub_rate|0.1|event update rate (0.1=10Hz)|
 
 1. run ros node
@@ -73,7 +73,7 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch...
     angle: 0.3
     force: 0.6"
     ```
-    Once the message is thrown, the wheel rotates to 0.3*2.5&pi; (from -1.0 to 1.0) with 0.6 rotation power (from 0.0 to 1.0).
+    Once the message is thrown, the wheel rotates to 0.3*2.5&pi; with 0.6 rotation power with PID control.
     Publish rate is not restricted.
 
 ## Install
