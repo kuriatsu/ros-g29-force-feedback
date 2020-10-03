@@ -27,13 +27,13 @@ private:
     double m_min_force;
 
     // motion config 0:PID force, 1:constant force
-    int m_mode;
     double m_Kp;
     double m_Ki;
     double m_Kd;
     double m_offset;
 
     // target and current state of the wheel
+    bool m_pid_mode;
     double m_target_angle;
     double m_target_force;
     double m_current_angle;
@@ -52,20 +52,19 @@ private:
 
 G29ForceFeedback::G29ForceFeedback():
     m_device_name("/dev/input/event19"),
-    m_mode(0),
     m_Kp(0.1),
     m_Ki(0.0),
     m_Kd(0.0),
     m_offset(0.01),
     m_max_force(1.0),
     m_min_force(0.2),
-    m_pub_rate(0.1)
+    m_pub_rate(0.1),
+    m_pid_mode(0)
 {
     ros::NodeHandle n;
     sub_target = n.subscribe("/ff_target", 1, &G29ForceFeedback::targetCallback, this);
 
     n.getParam("device_name", m_device_name);
-    n.getParam("mode", m_mode);
     n.getParam("Kp", m_Kp);
     n.getParam("Ki", m_Ki);
     n.getParam("Kd", m_Kd);
@@ -110,40 +109,31 @@ void G29ForceFeedback::updateFfDevice()
     diff_i += diff;
     diff_d = diff - buf;
 
-    switch (m_mode)
+    if (m_pid_mode)
     {
-        case (0):
+        force = fabs(m_Kp * diff + m_Ki * diff_i + m_Kd * diff_d) * ((diff > 0.0) ? 1.0 : -1.0);
+
+        // if wheel angle reached to the target
+        if (fabs(diff) < m_offset)
         {
-            force = fabs(m_Kp * diff + m_Ki * diff_i + m_Kd * diff_d) * ((diff > 0.0) ? 1.0 : -1.0);
-
-            // if wheel angle reached to the target
-            if (fabs(diff) < m_offset)
-            {
-                force = 0.0;
-                break;
-            }
-            else
-            {
-                // force less than 0.2 cannot turn the wheel
-                force = (force > 0.0) ? std::max(force, m_min_force) : std::min(force, -m_min_force);
-                // set max force for safety
-                force = (force > 0.0) ? std::min(force, m_target_force) : std::max(force, -m_target_force);
-            }
-
-            break;
+            force = 0.0;
         }
-
-        case (1):
+        else
         {
-            force = fabs(m_target_force) * ((diff > 0.0) ? 1.0 : -1.0);
+            // force less than 0.2 cannot turn the wheel
+            force = (force > 0.0) ? std::max(force, m_min_force) : std::min(force, -m_min_force);
+            // set max force for safety
+            force = (force > 0.0) ? std::min(force, m_target_force) : std::max(force, -m_target_force);
+        }
+    }
+    else
+    {
+        force = fabs(m_target_force) * ((diff > 0.0) ? 1.0 : -1.0);
 
-            // if wheel angle reached to the target
-            if (fabs(diff) < m_offset)
-            {
-                force = 0.0;
-                break;
-            }
-            break;
+        // if wheel angle reached to the target
+        if (fabs(diff) < m_offset)
+        {
+            force = 0.0;
         }
     }
 
@@ -175,6 +165,7 @@ void G29ForceFeedback::updateFfDevice()
 // get target information of wheel control from ros message
 void G29ForceFeedback::targetCallback(const g29_force_feedback::ForceFeedback &in_target)
 {
+    m_pid_mode = in_target.pid_mode;
     m_target_angle = in_target.angle;
     m_target_force = in_target.force;
 }
