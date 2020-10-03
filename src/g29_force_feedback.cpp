@@ -135,7 +135,7 @@ void G29ForceFeedback::updateFfDevice()
 
         case (1):
         {
-            force = fabs(force) * ((diff > 0.0) ? 1.0 : -1.0);
+            force = fabs(m_target_force) * ((diff > 0.0) ? 1.0 : -1.0);
 
             // if wheel angle reached to the target
             if (fabs(diff) < m_offset)
@@ -143,7 +143,6 @@ void G29ForceFeedback::updateFfDevice()
                 force = 0.0;
                 break;
             }
-
             break;
         }
     }
