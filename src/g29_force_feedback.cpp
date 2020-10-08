@@ -123,7 +123,7 @@ void G29ForceFeedback::updateFfDevice()
             // force less than 0.2 cannot turn the wheel
             force = (force > 0.0) ? std::max(force, m_min_force) : std::min(force, -m_min_force);
             // set max force for safety
-            force = (force > 0.0) ? std::min(force, m_target_force) : std::max(force, -m_target_force);
+            force = (force > 0.0) ? std::min(force, m_max_force) : std::max(force, -m_max_force);
         }
     }
     else
