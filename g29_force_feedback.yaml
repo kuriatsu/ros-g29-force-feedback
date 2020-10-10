@@ -1,5 +1,4 @@
-device_name: "/dev/input/event19"
-mode: 0
+device_name: "/dev/input/event26"
 Kp: 1.0
 Ki: 0.0
 Kd: 0.2
