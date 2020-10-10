@@ -45,7 +45,7 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch...
 1. download and build package
     ```bash
     cd /catkin_ws/src
-    git clone https://github.com/kuriatsu/g29-force-feedback.git g29_force_feedback
+    git clone https://github.com/kuriatsu/ros-g29-force-feedback.git g29_force_feedback
     cd ../
     catkin_make
     ```
