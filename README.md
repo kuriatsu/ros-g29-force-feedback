@@ -78,7 +78,7 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch...
 
 1. Throw message (It's better to use tab completion)  
     ```bash
-    $ rostopic pub /ff_target g29-force-feedback/ForceFeedback "header:
+    $ rostopic pub /ff_target g29_force_feedback/ForceFeedback "header:
       seq: 0
       stamp:
         secs: 0
