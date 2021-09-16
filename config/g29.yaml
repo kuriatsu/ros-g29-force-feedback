@@ -1,8 +1,8 @@
-device_name: "/dev/input/event26"
+device_name: "/dev/input/event5"
 Kp: 1.0
 Ki: 0.0
 Kd: 0.2
-offset: 0.01
+offset: 0.05
 max_force: 1.0
 min_force: 0.2
 pub_rate: 0.1
