@@ -12,177 +12,141 @@ class G29ForceFeedback
 private:
     ros::Subscriber sub_target;
     ros::Timer timer;
-    float m_pub_rate;
 
-    // variables from fouce feedback API
+    // device info
     int m_device_handle;
     int m_axis_code = ABS_X;
     int m_axis_min;
     int m_axis_max;
-    struct ff_effect m_effect;
 
-    // device config
+    // rosparam
     std::string m_device_name;
-    double m_max_force;
-    double m_min_force;
+    float m_update_rate;
 
-    // motion config 0:PID force, 1:constant force
-    double m_Kp;
-    double m_Ki;
-    double m_Kd;
-    double m_offset;
-
-    // target and current state of the wheel
-    bool m_pid_mode;
-    double m_target_angle;
-    double m_target_force;
-    double m_current_angle;
+    // variables
+    g29_force_feedback::ForceFeedback m_target;
+    float = m_force;
 
 public:
     G29ForceFeedback();
+    ~G29ForceFeedback();
 
 private:
     void targetCallback(const g29_force_feedback::ForceFeedback &in_target);
-    void timerCallback(const ros::TimerEvent&);
+    void getState(const ros::TimerEvent&);
     int testBit(int bit, unsigned char *array);
-    void initFfDevice();
-    void updateFfDevice();
+    void initDevice();
+    void uploadForce(const float &current, const float &target, const float &force);
 };
 
 
 G29ForceFeedback::G29ForceFeedback():
     m_device_name("/dev/input/event19"),
-    m_Kp(0.1),
-    m_Ki(0.0),
-    m_Kd(0.0),
-    m_offset(0.01),
-    m_max_force(1.0),
-    m_min_force(0.2),
-    m_pub_rate(0.1),
-    m_pid_mode(0)
+    m_update_rate(0.1),
 {
     ros::NodeHandle n;
     sub_target = n.subscribe("/ff_target", 1, &G29ForceFeedback::targetCallback, this);
 
     n.getParam("device_name", m_device_name);
-    n.getParam("Kp", m_Kp);
-    n.getParam("Ki", m_Ki);
-    n.getParam("Kd", m_Kd);
-    n.getParam("offset", m_offset);
-    n.getParam("max_force", m_max_force);
-    n.getParam("min_force", m_min_force);
-    n.getParam("pub_rate", m_pub_rate);
+    n.getParam("update_rate", m_update_rate);
 
-    initFfDevice();
+    initDevice();
 
     ros::Duration(1).sleep();
-    timer = n.createTimer(ros::Duration(m_pub_rate), &G29ForceFeedback::timerCallback, this);
+    timer = n.createTimer(ros::Duration(m_pub_rate), &G29ForceFeedback::getState, this);
+}
+
+G29ForceFeedback::~G29ForceFeedback()
+{
+    m_force = force;
+    struct ff_effect effect;
+    memset(&effect, 0, sizeof(effect));
+    effect.type = FF_CONSTANT;
+    effect.id = -1;
+    effect.u.constant.level = 0;
+    effect.direction = 0;
+    // upload effect
+    if (ioctl(m_device_handle, EVIOCSFF, &effect) < 0)
+    {
+        std::cout << "failed to upload effect" << std::endl;
+    }
 }
 
 
 // update input event with timer callback
-void G29ForceFeedback::timerCallback(const ros::TimerEvent&)
-{
-    updateFfDevice();
-}
-
-
-// update input event with writing information to the event file
-void G29ForceFeedback::updateFfDevice()
+void G29ForceFeedback::getState(const ros::TimerEvent&)
 {
     struct input_event event;
-    static float diff_i = 0.0, diff = 0.0;
-    double diff_d, force, buf;
+    float current_angle;
 
     // get current state
     while (read(m_device_handle, &event, sizeof(event)) == sizeof(event))
     {
         if (event.type == EV_ABS && event.code == m_axis_code)
         {
-            m_current_angle = (event.value - (m_axis_max + m_axis_min) * 0.5) * 2 / (m_axis_max - m_axis_min);
+            current_angle = (event.value - (m_axis_max + m_axis_min) * 0.5) * 2 / (m_axis_max - m_axis_min);
         }
     }
-    std::cout << m_current_angle << std::endl;
 
-    // if you wanna use I control, let's avoid integral value exploding
-    // static int count = 0;
-    // count ++;
-    // if (force > 0.3 || count > 10)
-    // {
-        //     diff_i = 0.0;
-        //     count = 0;
-        // }
-
-    // calcurate values for PID control
-    buf = diff;
-    diff = m_target_angle - m_current_angle;
-    diff_i += diff;
-    diff_d = diff - buf;
-
-    if (m_pid_mode)
+    if (m_is_target_updated)
     {
-        force = fabs(m_Kp * diff + m_Ki * diff_i + m_Kd * diff_d) * ((diff > 0.0) ? 1.0 : -1.0);
-
-        // if wheel angle reached to the target
-        if (fabs(diff) < m_offset)
-        {
-            force = 0.0;
-        }
-        else
-        {
-            // force less than 0.2 cannot turn the wheel
-            force = (force > 0.0) ? std::max(force, m_min_force) : std::min(force, -m_min_force);
-            // set max force for safety
-            force = (force > 0.0) ? std::min(force, m_max_force) : std::max(force, -m_max_force);
-        }
+        uploadForce(current_angle, m_target.angle, m_target.force);
     }
-    else
+}
+
+
+// update input event with writing information to the event file
+void G29ForceFeedback::uploadForce(const float &current, const float &target, const float &force)
+{
+    float diff = target - current;
+
+    if (std::fabs(diff) < 0.1)
     {
-        force = fabs(m_target_force) * ((diff > 0.0) ? 1.0 : -1.0);
-
-        // if wheel angle reached to the target
-        if (fabs(diff) < m_offset)
-        {
-            std::cout << m_offset << "," << diff << std::endl;
-            force = 0.0;
-        }
+        force = (diff >= 0.0) ? 0.3 : -0.3;
+    } else if (diff > 0.0)
+    {
+        force = (target >= 0.0) ? force : 0.3;
+    } else {
+        force = (target >= 0.0) ? -0.3 : -force;
     }
+   // for safety
+    force = (force > 0.0) ? std::min(force, 1.0) : std::max(force, -1.0);
 
-    // for safety
-    force = (force > 0.0) ? std::min(force, m_max_force) : std::max(force, -m_max_force);
+    if (force == m_force) return;
 
+    m_force = force;
     // set effect
-    m_effect.u.constant.level = 0x7fff * force;
-    m_effect.direction = 0x8000 * -m_target_angle * m_axis_max; // just direction, + or - is important
-    m_effect.u.constant.envelope.attack_level = 0;
-    m_effect.u.constant.envelope.attack_length = 100;
-    m_effect.u.constant.envelope.fade_level = 0;
-    m_effect.u.constant.envelope.fade_length = 100;
-    m_effect.trigger.button = 0;
-    m_effect.trigger.interval = 0;
-    m_effect.replay.length = 0xffff;
-    m_effect.replay.delay = 0;
-
+    struct ff_effect effect;
+    memset(&effect, 0, sizeof(effect));
+    effect.type = FF_CONSTANT;
+    effect.id = -1;
+    effect.u.constant.level = 0x7fff * force;
+    effect.direction = 0x8000 * m_target_angle * m_axis_max; // just direction, + or - is important
+    effect.u.constant.envelope.attack_level = 0;
+    effect.u.constant.envelope.attack_length = 100;
+    effect.u.constant.envelope.fade_level = 0;
+    effect.u.constant.envelope.fade_length = 100;
+    effect.trigger.button = 0;
+    effect.trigger.interval = 0;
+    effect.replay.length = 0xffff;
+    effect.replay.delay = 0;
     // upload effect
-    if (ioctl(m_device_handle, EVIOCSFF, &m_effect) < 0)
+    if (ioctl(m_device_handle, EVIOCSFF, &effect) < 0)
     {
-        std::cout << "failed to upload m_effect" << std::endl;
+        std::cout << "failed to upload effect" << std::endl;
     }
-
 }
 
 
 // get target information of wheel control from ros message
 void G29ForceFeedback::targetCallback(const g29_force_feedback::ForceFeedback &in_target)
 {
-    m_pid_mode = in_target.pid_mode;
-    m_target_angle = in_target.angle;
-    m_target_force = in_target.force;
+    m_target = in_target;
 }
 
 
 // initialize force feedback device
-void G29ForceFeedback::initFfDevice()
+void G29ForceFeedback::initDevice()
 {
     // setup device
     unsigned char key_bits[1+KEY_MAX/8/sizeof(unsigned char)];
@@ -247,27 +211,6 @@ void G29ForceFeedback::initFfDevice()
         exit(1);
     }
 
-    // initialize constant foce m_effect
-    memset(&m_effect, 0, sizeof(m_effect));
-    m_effect.type = FF_CONSTANT;
-    m_effect.id = -1;
-    m_effect.trigger.button = 0;
-    m_effect.trigger.interval = 0;
-    m_effect.replay.length = 0xffff;
-    m_effect.replay.delay = 0;
-    m_effect.u.constant.level = 0;
-    m_effect.direction = 0xC000;
-    m_effect.u.constant.envelope.attack_length = 0.0;
-    m_effect.u.constant.envelope.attack_level = 0;
-    m_effect.u.constant.envelope.fade_length = 10000.0;
-    m_effect.u.constant.envelope.fade_level = 0;
-
-    if (ioctl(m_device_handle, EVIOCSFF, &m_effect) < 0)
-    {
-        std::cout << "failed to upload m_effect" << std::endl;
-        exit(1);
-    }
-
     // start m_effect
     memset(&event, 0, sizeof(event));
     event.type = EV_FF;
@@ -281,7 +224,7 @@ void G29ForceFeedback::initFfDevice()
 }
 
 
-// util for initFfDevice()
+// util for initDevice()
 int G29ForceFeedback::testBit(int bit, unsigned char *array)
 {
     return ((array[bit / (sizeof(unsigned char) * 8)] >> (bit % (sizeof(unsigned char) * 8))) & 1);
