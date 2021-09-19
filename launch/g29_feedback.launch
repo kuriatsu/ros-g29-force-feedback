@@ -1,5 +1,5 @@
 <launch>
 <rosparam command="load" file="$(find g29_force_feedback)/config/g29.yaml"/>
 
- <node name="g29_feedback" pkg="g29_force_feedback" type="g29_force_feedback_node"/>
+ <node name="g29_feedback" pkg="g29_force_feedback" type="g29_force_feedback_node" output="screen"/>
 </launch>

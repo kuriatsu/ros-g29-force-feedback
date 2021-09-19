@@ -94,6 +94,16 @@ void G29ForceFeedback::updateFfDevice()
     static float diff_i = 0.0, diff = 0.0;
     double diff_d, force, buf;
 
+    // get current state
+    while (read(m_device_handle, &event, sizeof(event)) == sizeof(event))
+    {
+        if (event.type == EV_ABS && event.code == m_axis_code)
+        {
+            m_current_angle = (event.value - (m_axis_max + m_axis_min) * 0.5) * 2 / (m_axis_max - m_axis_min);
+        }
+    }
+    std::cout << m_current_angle << std::endl;
+
     // if you wanna use I control, let's avoid integral value exploding
     // static int count = 0;
     // count ++;
@@ -133,6 +143,7 @@ void G29ForceFeedback::updateFfDevice()
         // if wheel angle reached to the target
         if (fabs(diff) < m_offset)
         {
+            std::cout << m_offset << "," << diff << std::endl;
             force = 0.0;
         }
     }
@@ -140,25 +151,24 @@ void G29ForceFeedback::updateFfDevice()
     // for safety
     force = (force > 0.0) ? std::min(force, m_max_force) : std::max(force, -m_max_force);
 
-    // start effect
-    m_effect.u.constant.level = (short)(force * 32767.0);
-    m_effect.direction = 0xC000;
-    m_effect.u.constant.envelope.attack_level = (short)(force * 32767.0);
-    m_effect.u.constant.envelope.fade_level = (short)(force * 32767.0);
+    // set effect
+    m_effect.u.constant.level = 0x7fff * force;
+    m_effect.direction = 0x8000 * -m_target_angle * m_axis_max; // just direction, + or - is important
+    m_effect.u.constant.envelope.attack_level = 0;
+    m_effect.u.constant.envelope.attack_length = 100;
+    m_effect.u.constant.envelope.fade_level = 0;
+    m_effect.u.constant.envelope.fade_length = 100;
+    m_effect.trigger.button = 0;
+    m_effect.trigger.interval = 0;
+    m_effect.replay.length = 0xffff;
+    m_effect.replay.delay = 0;
 
+    // upload effect
     if (ioctl(m_device_handle, EVIOCSFF, &m_effect) < 0)
     {
         std::cout << "failed to upload m_effect" << std::endl;
     }
 
-    // get current state
-    while (read(m_device_handle, &event, sizeof(event)) == sizeof(event))
-    {
-        if (event.type == EV_ABS && event.code == m_axis_code)
-        {
-            m_current_angle = (event.value - (m_axis_max + m_axis_min) * 0.5) * 2 / (m_axis_max - m_axis_min);
-        }
-    }
 }
 
 
@@ -247,9 +257,9 @@ void G29ForceFeedback::initFfDevice()
     m_effect.replay.delay = 0;
     m_effect.u.constant.level = 0;
     m_effect.direction = 0xC000;
-    m_effect.u.constant.envelope.attack_length = 0;
+    m_effect.u.constant.envelope.attack_length = 0.0;
     m_effect.u.constant.envelope.attack_level = 0;
-    m_effect.u.constant.envelope.fade_length = 0;
+    m_effect.u.constant.envelope.fade_length = 10000.0;
     m_effect.u.constant.envelope.fade_level = 0;
 
     if (ioctl(m_device_handle, EVIOCSFF, &m_effect) < 0)
