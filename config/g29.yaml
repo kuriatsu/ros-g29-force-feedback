@@ -1,8 +1,4 @@
 device_name: "/dev/input/event27"
-Kp: 1.0
-Ki: 0.0
-Kd: 0.2
-offset: 0.05
 max_force: 1.0
 min_force: 0.2
-pub_rate: 5.0
+update_rate: 0.1

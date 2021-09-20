@@ -21,11 +21,20 @@ private:
 
     // rosparam
     std::string m_device_name;
-    float m_update_rate;
+    double m_update_rate;
+    double m_tolerance = 0.01;
 
     // variables
     g29_force_feedback::ForceFeedback m_target;
-    float = m_force;
+    double m_last_force;
+    struct ff_effect m_effect;
+    bool m_passed = false;
+    bool m_updated = false;
+    double m_start_angle;
+    double m_current_angle;
+
+    // other
+    double m_eps = 0.001;
 
 public:
     G29ForceFeedback();
@@ -36,13 +45,14 @@ private:
     void getState(const ros::TimerEvent&);
     int testBit(int bit, unsigned char *array);
     void initDevice();
-    void uploadForce(const float &current, const float &target, const float &force);
+    double calcRotateForce(const double &current_angle, const double &target_angle, const double &max_force, const double &rotate_speed);
+    void uploadForce(const double &angle, const double &force);
 };
 
 
 G29ForceFeedback::G29ForceFeedback():
-    m_device_name("/dev/input/event19"),
-    m_update_rate(0.1),
+    m_device_name("/dev/input/event27"),
+    m_update_rate(0.1)
 {
     ros::NodeHandle n;
     sub_target = n.subscribe("/ff_target", 1, &G29ForceFeedback::targetCallback, this);
@@ -53,22 +63,19 @@ G29ForceFeedback::G29ForceFeedback():
     initDevice();
 
     ros::Duration(1).sleep();
-    timer = n.createTimer(ros::Duration(m_pub_rate), &G29ForceFeedback::getState, this);
+    timer = n.createTimer(ros::Duration(m_update_rate), &G29ForceFeedback::getState, this);
 }
 
 G29ForceFeedback::~G29ForceFeedback()
 {
-    m_force = force;
-    struct ff_effect effect;
-    memset(&effect, 0, sizeof(effect));
-    effect.type = FF_CONSTANT;
-    effect.id = -1;
-    effect.u.constant.level = 0;
-    effect.direction = 0;
-    // upload effect
-    if (ioctl(m_device_handle, EVIOCSFF, &effect) < 0)
+    m_effect.type = FF_CONSTANT;
+    m_effect.id = -1;
+    m_effect.u.constant.level = 0;
+    m_effect.direction = 0;
+    // upload m_effect
+    if (ioctl(m_device_handle, EVIOCSFF, &m_effect) < 0)
     {
-        std::cout << "failed to upload effect" << std::endl;
+        std::cout << "failed to upload m_effect" << std::endl;
     }
 }
 
@@ -77,63 +84,89 @@ G29ForceFeedback::~G29ForceFeedback()
 void G29ForceFeedback::getState(const ros::TimerEvent&)
 {
     struct input_event event;
-    float current_angle;
+    double buf = m_current_angle;
 
     // get current state
     while (read(m_device_handle, &event, sizeof(event)) == sizeof(event))
     {
         if (event.type == EV_ABS && event.code == m_axis_code)
         {
-            current_angle = (event.value - (m_axis_max + m_axis_min) * 0.5) * 2 / (m_axis_max - m_axis_min);
+            m_current_angle = (event.value - (m_axis_max + m_axis_min) * 0.5) * 2 / (m_axis_max - m_axis_min);
         }
     }
 
-    if (m_is_target_updated)
+    double rotate_speed = fabs((buf - m_current_angle) / m_update_rate);
+    // std::cout << rotate_speed << std::endl;
+    double force = calcRotateForce(m_current_angle, m_target.angle, fabs(m_target.force), rotate_speed);
+    if (force == m_last_force) return;
+    m_last_force = force;
+    std::cout << force << std::endl;
+    uploadForce(m_target.angle, force);
+
+}
+
+
+double G29ForceFeedback::calcRotateForce(const double &current_angle, const double &target_angle, const double &max_force, const double &rotate_speed)
+{
+    double diff = target_angle - current_angle;
+    double initial_diff = m_target.angle - m_start_angle;
+
+    std::cout << target_angle << "-" << current_angle << "=" << diff << std::endl;
+    if (fabs(diff) < m_tolerance || fabs(max_force - 0.0) < m_eps)
+        return 0.0;
+
+    if ((diff < 0.0 && initial_diff < 0.0) || (diff >= 0.0 && initial_diff >= 0.0))
     {
-        uploadForce(current_angle, m_target.angle, m_target.force);
+        if (fabs(diff) < 0.1)
+        {
+            if (fabs(rotate_speed) > 0.2) // 0.2 = get closer speed
+            {
+                std::cout << "brake" << std::endl;
+                return (diff >= 0.0) ? -0.3*rotate_speed : 0.3*rotate_speed;
+            }
+            std::cout << "get closer" << std::endl; // get close without brake
+            return (diff >= 0.0) ? 0.2 : -0.2;
+        }
+        std::cout << "approach" << std::endl;
+        return (diff >= 0.0) ? std::min(max_force, 1.0) : -std::min(max_force, 1.0);
+    }
+    else
+    {
+        if (fabs(diff) >= 0.1)
+        {
+            std::cout << "too over" << std::endl;
+            m_start_angle = current_angle;
+        }
+
+        std::cout << "get closer" << std::endl;
+        return (diff >= 0.0) ? 0.2 : -0.2;
+
+        // return (diff >= 0.0) ? std::min(max_force, 1.0) : std::max(-max_force, -1.0);
     }
 }
 
 
 // update input event with writing information to the event file
-void G29ForceFeedback::uploadForce(const float &current, const float &target, const float &force)
+void G29ForceFeedback::uploadForce(const double &angle, const double &force)
 {
-    float diff = target - current;
-
-    if (std::fabs(diff) < 0.1)
-    {
-        force = (diff >= 0.0) ? 0.3 : -0.3;
-    } else if (diff > 0.0)
-    {
-        force = (target >= 0.0) ? force : 0.3;
-    } else {
-        force = (target >= 0.0) ? -0.3 : -force;
-    }
-   // for safety
-    force = (force > 0.0) ? std::min(force, 1.0) : std::max(force, -1.0);
-
-    if (force == m_force) return;
-
-    m_force = force;
     // set effect
-    struct ff_effect effect;
-    memset(&effect, 0, sizeof(effect));
-    effect.type = FF_CONSTANT;
-    effect.id = -1;
-    effect.u.constant.level = 0x7fff * force;
-    effect.direction = 0x8000 * m_target_angle * m_axis_max; // just direction, + or - is important
-    effect.u.constant.envelope.attack_level = 0;
-    effect.u.constant.envelope.attack_length = 100;
-    effect.u.constant.envelope.fade_level = 0;
-    effect.u.constant.envelope.fade_length = 100;
-    effect.trigger.button = 0;
-    effect.trigger.interval = 0;
-    effect.replay.length = 0xffff;
-    effect.replay.delay = 0;
+    m_effect.type = FF_CONSTANT;
+    m_effect.u.constant.level = 0x7fff * force;
+    m_effect.direction = 0x8000 * angle * m_axis_max; // just direction, + or - is important
+    m_effect.u.constant.envelope.attack_level = 0;
+    m_effect.u.constant.envelope.attack_length = 90;
+    m_effect.u.constant.envelope.fade_level = 0;
+    m_effect.u.constant.envelope.fade_length = 90;
+    m_effect.trigger.button = 0;
+    m_effect.trigger.interval = 0;
+    m_effect.replay.length = 0xffff;
+    m_effect.replay.delay = 0;
     // upload effect
-    if (ioctl(m_device_handle, EVIOCSFF, &effect) < 0)
+    if (ioctl(m_device_handle, EVIOCSFF, &m_effect) < 0)
     {
         std::cout << "failed to upload effect" << std::endl;
+    } else {
+        std::cout << "uploaded" << std::endl;
     }
 }
 
@@ -141,6 +174,14 @@ void G29ForceFeedback::uploadForce(const float &current, const float &target, co
 // get target information of wheel control from ros message
 void G29ForceFeedback::targetCallback(const g29_force_feedback::ForceFeedback &in_target)
 {
+    if (fabs(m_target.force - in_target.force) < m_eps && fabs(m_target.angle - in_target.angle) < m_eps)
+    {
+        m_updated = false;
+    } else
+    {
+        m_updated = true;
+        m_passed = false;
+    }
     m_target = in_target;
 }
 
@@ -152,7 +193,6 @@ void G29ForceFeedback::initDevice()
     unsigned char key_bits[1+KEY_MAX/8/sizeof(unsigned char)];
     unsigned char abs_bits[1+ABS_MAX/8/sizeof(unsigned char)];
     unsigned char ff_bits[1+FF_MAX/8/sizeof(unsigned char)];
-
     struct input_event event;
     struct input_absinfo abs_info;
 
@@ -208,6 +248,26 @@ void G29ForceFeedback::initDevice()
     if (write(m_device_handle, &event, sizeof(event)) != sizeof(event))
     {
         std::cout << "failed to disable auto centering" << std::endl;
+        exit(1);
+    }
+
+    memset(&m_effect, 0, sizeof(m_effect));
+    m_effect.type = FF_CONSTANT;
+    m_effect.id = -1;
+    m_effect.trigger.button = 0;
+    m_effect.trigger.interval = 0;
+    m_effect.replay.length = 0xffff;
+    m_effect.replay.delay = 0;
+    m_effect.u.constant.level = 0;
+    m_effect.direction = 0xC000;
+    m_effect.u.constant.envelope.attack_length = 0;
+    m_effect.u.constant.envelope.attack_level = 0;
+    m_effect.u.constant.envelope.fade_length = 0;
+    m_effect.u.constant.envelope.fade_level = 0;
+
+    if (ioctl(m_device_handle, EVIOCSFF, &m_effect) < 0)
+    {
+        std::cout << "failed to upload m_effect" << std::endl;
         exit(1);
     }
 
