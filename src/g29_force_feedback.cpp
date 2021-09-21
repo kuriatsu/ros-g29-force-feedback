@@ -96,7 +96,6 @@ void G29ForceFeedback::getState(const ros::TimerEvent&)
     }
 
     double rotate_speed = fabs((buf - m_current_angle) / m_update_rate);
-    // std::cout << rotate_speed << std::endl;
     double force = calcRotateForce(m_current_angle, m_target.angle, fabs(m_target.force), rotate_speed);
     if (force == m_last_force) return;
     m_last_force = force;
@@ -111,7 +110,6 @@ double G29ForceFeedback::calcRotateForce(const double &current_angle, const doub
     double diff = target_angle - current_angle;
     double initial_diff = m_target.angle - m_start_angle;
 
-    std::cout << target_angle << "-" << current_angle << "=" << diff << std::endl;
     if (fabs(diff) < m_tolerance || fabs(max_force - 0.0) < m_eps)
         return 0.0;
 
@@ -140,8 +138,6 @@ double G29ForceFeedback::calcRotateForce(const double &current_angle, const doub
 
         std::cout << "get closer" << std::endl;
         return (diff >= 0.0) ? 0.2 : -0.2;
-
-        // return (diff >= 0.0) ? std::min(max_force, 1.0) : std::max(-max_force, -1.0);
     }
 }
 
@@ -150,17 +146,12 @@ double G29ForceFeedback::calcRotateForce(const double &current_angle, const doub
 void G29ForceFeedback::uploadForce(const double &angle, const double &force)
 {
     // set effect
-    m_effect.type = FF_CONSTANT;
     m_effect.u.constant.level = 0x7fff * force;
-    m_effect.direction = 0x8000 * angle * m_axis_max; // just direction, + or - is important
-    m_effect.u.constant.envelope.attack_level = 0;
-    m_effect.u.constant.envelope.attack_length = 90;
-    m_effect.u.constant.envelope.fade_level = 0;
-    m_effect.u.constant.envelope.fade_length = 90;
-    m_effect.trigger.button = 0;
-    m_effect.trigger.interval = 0;
-    m_effect.replay.length = 0xffff;
-    m_effect.replay.delay = 0;
+    m_effect.direction = 0xC000;
+    m_effect.u.constant.envelope.attack_level = 0x7fff * force / 2;
+    m_effect.u.constant.envelope.attack_length = 0;
+    m_effect.u.constant.envelope.fade_level = 0x7fff * force / 2;
+    m_effect.u.constant.envelope.fade_length = 0;
     // upload effect
     if (ioctl(m_device_handle, EVIOCSFF, &m_effect) < 0)
     {
@@ -251,13 +242,14 @@ void G29ForceFeedback::initDevice()
         exit(1);
     }
 
+    // init effect and get effect id
     memset(&m_effect, 0, sizeof(m_effect));
     m_effect.type = FF_CONSTANT;
-    m_effect.id = -1;
+    m_effect.id = -1; // initial value
     m_effect.trigger.button = 0;
     m_effect.trigger.interval = 0;
-    m_effect.replay.length = 0xffff;
-    m_effect.replay.delay = 0;
+    m_effect.replay.length = 0xffff;  // longest value
+    m_effect.replay.delay = 0; // delay from write(...)
     m_effect.u.constant.level = 0;
     m_effect.direction = 0xC000;
     m_effect.u.constant.envelope.attack_length = 0;
