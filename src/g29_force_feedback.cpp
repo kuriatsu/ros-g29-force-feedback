@@ -18,23 +18,23 @@ private:
     int m_axis_code = ABS_X;
     int m_axis_min;
     int m_axis_max;
+    std::string m_device_name;
 
     // rosparam
-    std::string m_device_name;
     double m_update_rate;
-    double m_tolerance = 0.01;
+    double m_eps = 0.001;
+    // double m_tolerance = 0.01;
 
     // variables
     g29_force_feedback::ForceFeedback m_target;
-    double m_last_force;
     struct ff_effect m_effect;
-    bool m_passed = false;
-    bool m_updated = false;
-    double m_start_angle;
-    double m_current_angle;
+    double m_force;
+    double m_angle;
+    // bool m_passed = false;
+    // bool m_updated = false;
+    // double m_start_angle;
 
     // other
-    double m_eps = 0.001;
 
 public:
     G29ForceFeedback();
@@ -42,10 +42,10 @@ public:
 
 private:
     void targetCallback(const g29_force_feedback::ForceFeedback &in_target);
-    void getState(const ros::TimerEvent&);
+    void loop(const ros::TimerEvent&);
     int testBit(int bit, unsigned char *array);
     void initDevice();
-    double calcRotateForce(const double &current_angle, const double &target_angle, const double &max_force, const double &rotate_speed);
+    double calcRotateForce(const double &current_angle, const double &last_angle, const double &target_angle, const double &max_force);
     void uploadForce(const double &angle, const double &force);
 };
 
@@ -63,7 +63,7 @@ G29ForceFeedback::G29ForceFeedback():
     initDevice();
 
     ros::Duration(1).sleep();
-    timer = n.createTimer(ros::Duration(m_update_rate), &G29ForceFeedback::getState, this);
+    timer = n.createTimer(ros::Duration(m_update_rate), &G29ForceFeedback::loop, this);
 }
 
 G29ForceFeedback::~G29ForceFeedback()
@@ -81,64 +81,39 @@ G29ForceFeedback::~G29ForceFeedback()
 
 
 // update input event with timer callback
-void G29ForceFeedback::getState(const ros::TimerEvent&)
+void G29ForceFeedback::loop(const ros::TimerEvent&)
 {
     struct input_event event;
-    double buf = m_current_angle;
+    double last_angle = m_angle, force;
 
     // get current state
     while (read(m_device_handle, &event, sizeof(event)) == sizeof(event))
     {
         if (event.type == EV_ABS && event.code == m_axis_code)
         {
-            m_current_angle = (event.value - (m_axis_max + m_axis_min) * 0.5) * 2 / (m_axis_max - m_axis_min);
+            m_angle = (event.value - (m_axis_max + m_axis_min) * 0.5) * 2 / (m_axis_max - m_axis_min);
         }
     }
 
-    double rotate_speed = fabs((buf - m_current_angle) / m_update_rate);
-    double force = calcRotateForce(m_current_angle, m_target.angle, fabs(m_target.force), rotate_speed);
-    if (force == m_last_force) return;
-    m_last_force = force;
-    std::cout << force << std::endl;
+    force = calcRotateForce(m_angle, last_angle, m_target.angle, fabs(m_target.force));
+
     uploadForce(m_target.angle, force);
 
 }
 
 
-double G29ForceFeedback::calcRotateForce(const double &current_angle, const double &target_angle, const double &max_force, const double &rotate_speed)
+double G29ForceFeedback::calcRotateForce(const double &current_angle, const double &last_angle, const double &target_angle, const double &max_force)
 {
     double diff = target_angle - current_angle;
-    double initial_diff = m_target.angle - m_start_angle;
+    // double initial_diff = m_target.angle - m_start_angle;
+    // double rotate_speed = (current_angle - last_angle) / m_update_rate);
+    double torque =
+    if (force == m_force) return;
+    m_force = force;
+    std::cout << force << std::endl;
+    if (fabs(diff) < m_eps) return 0.0;
 
-    if (fabs(diff) < m_tolerance || fabs(max_force - 0.0) < m_eps)
-        return 0.0;
 
-    if ((diff < 0.0 && initial_diff < 0.0) || (diff >= 0.0 && initial_diff >= 0.0))
-    {
-        if (fabs(diff) < 0.1)
-        {
-            if (fabs(rotate_speed) > 0.2) // 0.2 = get closer speed
-            {
-                std::cout << "brake" << std::endl;
-                return (diff >= 0.0) ? -0.3*rotate_speed : 0.3*rotate_speed;
-            }
-            std::cout << "get closer" << std::endl; // get close without brake
-            return (diff >= 0.0) ? 0.2 : -0.2;
-        }
-        std::cout << "approach" << std::endl;
-        return (diff >= 0.0) ? std::min(max_force, 1.0) : -std::min(max_force, 1.0);
-    }
-    else
-    {
-        if (fabs(diff) >= 0.1)
-        {
-            std::cout << "too over" << std::endl;
-            m_start_angle = current_angle;
-        }
-
-        std::cout << "get closer" << std::endl;
-        return (diff >= 0.0) ? 0.2 : -0.2;
-    }
 }
 
 
@@ -165,14 +140,14 @@ void G29ForceFeedback::uploadForce(const double &angle, const double &force)
 // get target information of wheel control from ros message
 void G29ForceFeedback::targetCallback(const g29_force_feedback::ForceFeedback &in_target)
 {
-    if (fabs(m_target.force - in_target.force) < m_eps && fabs(m_target.angle - in_target.angle) < m_eps)
-    {
-        m_updated = false;
-    } else
-    {
-        m_updated = true;
-        m_passed = false;
-    }
+    // if (fabs(m_target.force - in_target.force) < m_eps && fabs(m_target.angle - in_target.angle) < m_eps)
+    // {
+    //     m_updated = false;
+    // } else
+    // {
+    //     m_updated = true;
+    //     m_passed = false;
+    // }
     m_target = in_target;
 }
 
