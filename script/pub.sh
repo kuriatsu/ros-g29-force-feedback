@@ -4,6 +4,5 @@ rostopic pub /ff_target g29_force_feedback/ForceFeedback "header:
     secs: 0
     nsecs: 0
   frame_id: ''
-angle: 0.0
-force: 0.1
-pid_mode: true"
+position: 0.0
+torque: 0.1"
