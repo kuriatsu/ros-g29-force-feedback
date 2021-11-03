@@ -1,3 +1,3 @@
 std_msgs/Header header
-float32 angle
-float32 force
+float32 position
+float32 torque
