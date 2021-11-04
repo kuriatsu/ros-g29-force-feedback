@@ -67,7 +67,7 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
     |brake_torque|0.2|Braking torque to stop at the position (descrived below)|
     |brake_position|0.1|Braking position(descrived below)|
     |auto_centering_max_torque|0.3|Max torque for auto centering|
-    |auto_centering_max_position|0.2|Max torque position while auto centering (brake_position < auto_centering_max_position)|
+    |auto_centering_max_position|0.2|Max torque position while auto centering|
     |eps|0.01|Wheel in the range (from position-eps to position+eps) is considered as it has reached the specified position|
     |auto_centering|false|Anto centering if true|
 
