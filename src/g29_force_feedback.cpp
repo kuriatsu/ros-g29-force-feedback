@@ -25,7 +25,7 @@ private:
     double m_max_torque;
     double m_min_torque;
     double m_brake_position;
-    double m_brake_torque_rate;
+    double m_brake_torque;
     double m_auto_centering_max_torque;
     double m_auto_centering_max_position;
     double m_eps;
@@ -65,7 +65,7 @@ G29ForceFeedback::G29ForceFeedback() {
     n.getParam("max_torque", m_max_torque);
     n.getParam("min_torque", m_min_torque);
     n.getParam("brake_position", m_brake_position);
-    n.getParam("brake_torque_rate", m_brake_torque_rate);
+    n.getParam("brake_torque", m_brake_torque);
     n.getParam("auto_centering_max_torque", m_auto_centering_max_torque);
     n.getParam("auto_centering_max_position", m_auto_centering_max_position);
     n.getParam("eps", m_eps);
@@ -129,7 +129,7 @@ void G29ForceFeedback::calcRotateForce(double &torque,
 
     } else if (fabs(diff) < m_brake_position) {
         m_is_brake_range = true;
-        torque = target.torque * m_brake_torque_rate * -direction;
+        torque = target.torque * m_brake_torque * -direction;
         attack_length = m_loop_rate;
 
     } else {
