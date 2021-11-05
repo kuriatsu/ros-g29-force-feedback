@@ -101,9 +101,6 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
 1. Push to the branch (git push origin my-new-feature)
 1. Create new Pull Request
 
-# Licence
-
-[MIT](https://github.com/tcnksm/tool/blob/master/LICENCE)
 
 # Author
 
