@@ -120,3 +120,8 @@ Oscillation problem solved.
 Wheel stops at the specified position, then starts auto centering.
 Auto centering mode are set by rosparam in config/g29.yaml, not by rostopic.
 Name of topic variables changed.
+
+## 2022-04-21
+
+### ROS2-Foxy integration
+Now available in ROS2-Foxy
