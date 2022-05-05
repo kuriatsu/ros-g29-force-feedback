@@ -35,19 +35,19 @@ CONFIG_LOGIWHEELS_FF=y
 If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kernel...
 
 # Install
-1. create catkin_ws
+1. create ros2_ws
     ```bash
     cd /path/to/any/dir
-    mkdir -p catkin_ws/src
-    cd /catkin_ws/src
-    catkin_init_workspace
+    mkdir -p ros2_ws/src
+    cd /ros2_ws
+    colcon build
     ```
 1. download and build package
     ```bash
-    cd /catkin_ws/src
-    git clone https://github.com/kuriatsu/ros-g29-force-feedback.git g29_force_feedback
+    cd /ros2_ws/src
+    git clone https://github.com/kuriatsu/ros-g29-force-feedback.git checkout ros2_foxy
     cd ../
-    catkin_make
+    colcon build
     ```
     
 # Usage
@@ -75,21 +75,14 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
 
 1. run ros node
     ```bash
-    $ source /path/to/catkin_ws/devel/setup.bash
-    $ rosparam load /path/to/catkin_ws/src/g29_force_feedback/g29_force_feedback.yaml
-    $ rosrun g29-force-feedback node
+    $ source /path/to/ros2_ws/install/setup.bash
+    $ cd /path/to/ros2_ws
+    $ ros2 run ros_g29_force_feedback  g29_force_feedback_node --ros-args --params-file /path/to/ros2_ws/install/ros_g29_force_feedback/share/ros_g29_force_feedback/config/g29.yaml 
     ```
 
 1. Throw message (It's better to use tab completion)  
     ```bash
-    $ rostopic pub /ff_target g29_force_feedback/ForceFeedback "header:
-      seq: 0
-      stamp:
-        secs: 0
-        nsecs: 0
-      frame_id: ''
-    position: 0.3
-    torque: 0.0"
+    $ ros2 topic pub /ff_target ros_g29_force_feedback/msg/ForceFeedback "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, position: 0.0, torque: 0.1}"
     ```
     Once the message is thrown, the wheel rotates to 0.3*<max_angle> (as for g29 ±450°).
     Publish rate is not restricted.
@@ -120,3 +113,8 @@ Oscillation problem solved.
 Wheel stops at the specified position, then starts auto centering.
 Auto centering mode are set by rosparam in config/g29.yaml, not by rostopic.
 Name of topic variables changed.
+
+## 2022-04-21
+
+### ROS2-Foxy integration
+Now available in ROS2-Foxy
