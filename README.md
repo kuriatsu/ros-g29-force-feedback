@@ -1,5 +1,7 @@
-ros-g29-force-feedback
-====
+# ros-g29-force-feedback
+
+![GitHub forks](https://img.shields.io/github/forks/kuriatsu/ros-g29-force-feedback?style=social)   ![GitHub Repo stars](https://img.shields.io/github/stars/kuriatsu/ros-g29-force-feedback?style=social)  ![GitHub last commit](https://img.shields.io/github/last-commit/kuriatsu/ros-g29-force-feedback)    ![ros](https://img.shields.io/badge/ROS-Foxy-yellow)    ![ubuntu](https://img.shields.io/badge/Ubuntu-20.04-purple)
+
 
 # Overview
 Ros package to control force feedback of logitech g29 steering wheel from ros message, written in c++, for human beings all over the world.
