@@ -9,4 +9,4 @@ g29_force_feedback:
     auto_centering_max_torque: 0.3
     auto_centering_max_position: 0.2
     eps: 0.05
-    auto_centering: true
+    auto_centering: false
