@@ -70,7 +70,7 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
     ```
     find **Logitech G29 Driving Force Racing Wheel** and check Handlers (ex. event19)
 
-2. Edit config/g29.yaml `device_name` according to 1
+2. Edit /config/g29.yaml/device_name` according to step 1
 
 3. run ros node
     ```bash
