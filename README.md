@@ -1,6 +1,6 @@
 # ros-g29-force-feedback
 
-![GitHub forks](https://img.shields.io/github/forks/kuriatsu/ros-g29-force-feedback?style=social)   ![GitHub Repo stars](https://img.shields.io/github/stars/kuriatsu/ros-g29-force-feedback?style=social)  ![GitHub last commit](https://img.shields.io/github/last-commit/kuriatsu/ros-g29-force-feedback)    ![ros](https://img.shields.io/badge/ROS-Foxy-yellow)    ![ubuntu](https://img.shields.io/badge/Ubuntu-20.04-purple)
+![GitHub forks](https://img.shields.io/github/forks/kuriatsu/ros-g29-force-feedback?style=social)   ![GitHub Repo stars](https://img.shields.io/github/stars/kuriatsu/ros-g29-force-feedback?style=social)  ![GitHub last commit](https://img.shields.io/github/last-commit/kuriatsu/ros-g29-force-feedback)    ![ros](https://img.shields.io/badge/ROS-Galactic-blue)    ![ubuntu](https://img.shields.io/badge/Ubuntu-20.04-purple)
 
 
 # Overview
@@ -13,11 +13,11 @@ This is useful for the user interface of autonomous driving, driving simulator l
 * Standalone ros package to control steering wheel. (doesn't depend on the other ros packages like ros-melodic-joy etc.)
 * Two control modes
 
-    Control mode
-    Rotate wheel to the specified angle (`position`) with specified `torque` with your hands off.
+    * Control mode (`config/g29.yaml/auto_centering=false`)  
+    Rotate wheel to the specified angle (`position`) with specified `torque` as specified with rostopic.
 
-    Auto centering mode
-    Automatically centering to the specified angle (`position`) with `auto_centering_max_torque` (the closer to the `position`, the lower the torque become.
+    * Auto centering mode (`config/g29.yaml/auto_centering=true`)  
+    Automatically centering position, without publishing rostopic.
 
 
 * ROS1 and ROS2 support. (if you use ROS1, checkout and refer [ros1 branch](https://github.com/kuriatsu/ros-g29-force-feedback/tree/ros1))
@@ -29,8 +29,11 @@ This is useful for the user interface of autonomous driving, driving simulator l
     |ROS2|--|--|
     |Dashing|no|no|
     |Foxy|tested|no|
+    |Galactic|tested|no|
 
-# Demo
+# Demo 
+examples/carla_control.py
+  
 ![demo_gif](https://github.com/kuriatsu/ros-g29-force-feedback/blob/image/images/force_feedback_test.gif)
 
 # Requirement
@@ -48,17 +51,16 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
 # Install
 1. create ros2_ws
     ```bash
-    cd /path/to/any/dir
     mkdir -p ros2_ws/src
     cd /ros2_ws
     colcon build
     ```
-1. download and build package
+2. download and build package
     ```bash
     cd /ros2_ws/src
     git clone https://github.com/kuriatsu/ros-g29-force-feedback.git
     cd ../
-    colcon build
+    colcon build --symlink-install
     ```
     
 # Usage
@@ -68,16 +70,18 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
     ```
     find **Logitech G29 Driving Force Racing Wheel** and check Handlers (ex. event19)
 
-1. run ros node
+2. Edit config/g29.yaml `device_name` according to 1
+
+3. run ros node
     ```bash
     $ source /path/to/ros2_ws/install/setup.bash
     $ cd /path/to/ros2_ws
-    $ ros2 run ros_g29_force_feedback  g29_force_feedback_node --ros-args --params-file /path/to/ros2_ws/install/ros_g29_force_feedback/share/ros_g29_force_feedback/config/g29.yaml 
+    $ ros2 run ros_g29_force_feedback g29_force_feedback --ros-args --params-file /path/to/ros2_ws/src/ros_g29_force_feedback/config/g29.yaml 
     ```
 
 1. Throw message (It's better to use tab completion)  
     ```bash
-    $ ros2 topic pub /ff_target ros_g29_force_feedback/msg/ForceFeedback "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, position: 0.0, torque: 0.1}"
+    $ ros2 topic pub /ff_target ros_g29_force_feedback/msg/ForceFeedback "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, position: 0.3, torque: 0.5}"
     ```
     Once the message is thrown, the wheel rotates to 0.3*<max_angle> (g29: max_angle=450° clockwise, -450° counterclockwise).
     Publish rate is not restricted.
@@ -114,6 +118,10 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
 [kuriatsu](https://github.com/kuriatsu)
 
 # Change Log
+
+## 2022-11-6
+### examples added
+An example script of CARLA connection was added. Rotate the wheel according to the ego vehicle spawned in CARLA as shown in the GIF image.
 
 ## 2020-10-10
 ### changed
