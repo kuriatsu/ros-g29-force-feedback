@@ -74,9 +74,8 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
 
 3. run ros node
     ```bash
-    $ source /path/to/ros2_ws/install/setup.bash
-    $ cd /path/to/ros2_ws
-    $ ros2 run ros_g29_force_feedback g29_force_feedback --ros-args --params-file /path/to/ros2_ws/src/ros_g29_force_feedback/config/g29.yaml 
+    $ source ros2_ws/install/setup.bash
+    $ ros2 run ros_g29_force_feedback g29_force_feedback --ros-args --params-file ros2_ws/src/ros_g29_force_feedback/config/g29.yaml 
     ```
 
 1. Throw message (It's better to use tab completion)  
