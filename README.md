@@ -4,7 +4,7 @@
 
 
 # Overview
-ROS2 package to control force feedback of logitech g29 steering wheel from ros message, written in c++, for human beings all over the world.
+ROS2 package to control force feedback of logitech g29 steering wheel with ros message, written in c++, for human beings all over the world.
 This is useful for the user interface of autonomous driving, driving simulator like [CARLA](https://carla.org/), [LGSVL](https://www.lgsvlsimulator.com/) etc.
 
 ![logitech g29](https://github.com/kuriatsu/ros-g29-force-feedback/blob/image/images/logicoolg29.png)
