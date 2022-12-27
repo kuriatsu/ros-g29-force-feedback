@@ -7,7 +7,9 @@
 ROS2 package to control force feedback of logitech g29 steering wheel with ros message, written in c++, for human beings all over the world.
 This is useful for the user interface of autonomous driving, driving simulator like [CARLA](https://carla.org/), [LGSVL](https://www.lgsvlsimulator.com/) etc.
 
-![logitech g29](https://github.com/kuriatsu/ros-g29-force-feedback/blob/image/images/logicoolg29.png)
+`examples/carla_control.py` 
+
+![demo_gif](https://github.com/kuriatsu/ros-g29-force-feedback/blob/image/images/force_feedback_test.gif)
 
 # Features
 * Standalone ros package to control steering wheel. (doesn't depend on the other ros packages like ros-melodic-joy etc.)
@@ -30,11 +32,6 @@ This is useful for the user interface of autonomous driving, driving simulator l
     |Dashing|no|no|
     |Foxy|tested|no|
     |Galactic|tested|no|
-
-# Demo 
-examples/carla_control.py
-  
-![demo_gif](https://github.com/kuriatsu/ros-g29-force-feedback/blob/image/images/force_feedback_test.gif)
 
 # Requirement
 * ubuntu18/20
