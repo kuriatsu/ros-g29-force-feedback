@@ -1,8 +1,5 @@
 # ros-g29-force-feedback
 
-![GitHub forks](https://img.shields.io/github/forks/kuriatsu/ros-g29-force-feedback?style=social)   ![GitHub Repo stars](https://img.shields.io/github/stars/kuriatsu/ros-g29-force-feedback?style=social)  ![GitHub last commit](https://img.shields.io/github/last-commit/kuriatsu/ros-g29-force-feedback)    ![ros](https://img.shields.io/badge/ROS-Galactic-blue)    ![ubuntu](https://img.shields.io/badge/Ubuntu-20.04-purple)
-
-
 # Overview
 ROS2 package to control force feedback of logitech g29 steering wheel with ros message, written in c++, for human beings all over the world.
 This is useful for the user interface of autonomous driving, driving simulator like [CARLA](https://carla.org/), [LGSVL](https://www.lgsvlsimulator.com/) etc.
@@ -28,14 +25,11 @@ This is useful for the user interface of autonomous driving, driving simulator l
     |ROS1|--|--|
     |Kinetic|tested|no|
     |Melodic|tested|no|
-    |ROS2|--|--|
-    |Dashing|no|no|
-    |Foxy|tested|no|
-    |Galactic|tested|no|
+
 
 # Requirement
-* ubuntu18/20
-* ROS2
+* ubuntu18
+* ROS1
 * Logitech G29 Driving Force Racing Wheel (Planning to test with g923)
 
 To check whether your kernel supports force feedback, do as follows
@@ -46,18 +40,19 @@ CONFIG_LOGIWHEELS_FF=y
 If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kernel...
 
 # Install
-1. create ros2_ws
+1. create catkin_ws
     ```bash
-    mkdir -p ros2_ws/src
-    cd /ros2_ws
-    colcon build
+    cd /path/to/any/dir
+    mkdir -p catkin_ws/src
+    cd /catkin_ws
+    catkin_make
     ```
 2. download and build package
     ```bash
-    cd /ros2_ws/src
-    git clone https://github.com/kuriatsu/ros-g29-force-feedback.git
+    cd /catkin_ws/src
+    git clone https://github.com/kuriatsu/ros-g29-force-feedback.git -b ros1
     cd ../
-    colcon build --symlink-install
+    catkin_make
     ```
     
 # Usage
@@ -71,13 +66,14 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
 
 3. run ros node
     ```bash
-    $ source ros2_ws/install/setup.bash
-    $ ros2 run ros_g29_force_feedback g29_force_feedback --ros-args --params-file ros2_ws/src/ros_g29_force_feedback/config/g29.yaml 
+    $ source /path/to/catkin_ws/install/setup.bash
+    $ cd /path/to/catkin_ws
+    $ rosrun ros_g29_force_feedback  g29_force_feedback_node --ros-args --params-file /path/to/catkin_ws/install/ros_g29_force_feedback/share/ros_g29_force_feedback/config/g29.yaml
     ```
 
 1. Throw message (It's better to use tab completion)  
     ```bash
-    $ ros2 topic pub /ff_target ros_g29_force_feedback/msg/ForceFeedback "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, position: 0.3, torque: 0.5}"
+    $ rostopic pub /ff_target ros_g29_force_feedback/msg/ForceFeedback "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, position: 0.0, torque: 0.1}"
     ```
     Once the message is thrown, the wheel rotates to 0.3*<max_angle> (g29: max_angle=450° clockwise, -450° counterclockwise).
     Publish rate is not restricted.

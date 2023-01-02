@@ -19,18 +19,18 @@ except IndexError:
 import carla
 import numpy as np
 import random
-import rclpy
-from rclpy.node import Node
+import rospy
 from ros_g29_force_feedback.msg import ForceFeedback
 
-class CarlaControlNode(Node):
+class CarlaFFNode():
     def __init__(self, client):
-        super().__init__("carla_ff_node")
-        self.publisher = self.create_publisher(ForceFeedback,"/ff_target", 10)
-        self.timer = self.create_timer(0.1, self.timer_cb)
-        self.client = client
+        self.client = carla.Client("127.0.0.1", 2000)
+        self.client.set_timeout(2.0)
         self.world = client.get_world()
         self.actor = self.get_hero()
+
+        self.publisher = rospy.Publisher("/ff_target", ForceFeedback, 10)
+        rospy.Timer(rospy.Duration(0.1), self.timer_cb)
 
     def get_hero(self):
         for actor in self.world.get_actors():
@@ -39,7 +39,7 @@ class CarlaControlNode(Node):
             
     def timer_cb(self):
         out_msg = ForceFeedback()
-        out_msg.header.stamp = self.get_clock().now().to_msg()
+        out_msg.header.stamp = rospy.Time.now()
         
         steering_angle = self.actor.get_control().steer
         out_msg.position = steering_angle
@@ -48,14 +48,9 @@ class CarlaControlNode(Node):
 
 def main(args=None):
 
-    rclpy.init(args=args)
-    client = carla.Client("127.0.0.1", 2000)
-    client.set_timeout(2.0)
-
-    carla_control_node = CarlaControlNode(client)
-    rclpy.spin(carla_control_node)
-    carla_control_node.destroy_node()
-    rclpy.shutdown()
+    rospy.init_node("carla_ff_node)
+    carla_control_node = CarlaFFNode()
+    rospy.spin()
 
 
 if __name__ == "__main__":

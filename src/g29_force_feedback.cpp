@@ -1,19 +1,18 @@
-#include <rclcpp/rclcpp.hpp>
-
+#include <ros/ros.h>
 #include <linux/input.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <math.h>
 
-#include "ros_g29_force_feedback/msg/force_feedback.hpp"
-// #include "ros_g29_force_feedback/msg/force_feedback.hpp"
+#include "ros_g29_force_feedback/ForceFeedback.h"
 
-class G29ForceFeedback : public rclcpp::Node {
+class G29ForceFeedback {
 
 private:
-    rclcpp::Subscription<ros_g29_force_feedback::msg::ForceFeedback>::SharedPtr sub_target;
-    rclcpp::TimerBase::SharedPtr timer;
+    ros::Subscriber sub_target;
+    ros::Timer timer;
+
     // device info
     int m_device_handle;
     int m_axis_code = ABS_X;
@@ -26,14 +25,14 @@ private:
     double m_max_torque;
     double m_min_torque;
     double m_brake_position;
-    double m_brake_torque;
+    double m_brake_torque_rate;
     double m_auto_centering_max_torque;
     double m_auto_centering_max_position;
     double m_eps;
     bool m_auto_centering;
 
     // variables
-    ros_g29_force_feedback::msg::ForceFeedback m_target;
+    g29_force_feedback::ForceFeedback m_target;
     bool m_is_target_updated = false;
     bool m_is_brake_range = false;
     struct ff_effect m_effect;
@@ -46,51 +45,36 @@ public:
     ~G29ForceFeedback();
 
 private:
-    void targetCallback(const ros_g29_force_feedback::msg::ForceFeedback::SharedPtr in_target);
-    void loop();
+    void targetCallback(const g29_force_feedback::ForceFeedback &in_target);
+    void loop(const ros::TimerEvent&);
     int testBit(int bit, unsigned char *array);
     void initDevice();
-    void calcRotateForce(double &torque, double &attack_length, const ros_g29_force_feedback::msg::ForceFeedback &target, const double &current_position);
-    void calcCenteringForce(double &torque, const ros_g29_force_feedback::msg::ForceFeedback &target, const double &current_position);
+    void calcRotateForce(double &torque, double &attack_length, const g29_force_feedback::ForceFeedback &target, const double &current_position);
+    void calcCenteringForce(double &torque, const g29_force_feedback::ForceFeedback &target, const double &current_position);
     void uploadForce(const double &position, const double &force, const double &attack_length);
 };
 
 
-G29ForceFeedback::G29ForceFeedback() 
-    : Node("g29_force_feedback"){
-        
-    sub_target = this->create_subscription<ros_g29_force_feedback::msg::ForceFeedback>(
-        "/ff_target", 
-        rclcpp::SystemDefaultsQoS(), 
-        std::bind(&G29ForceFeedback::targetCallback, this, std::placeholders::_1));
-    
-    declare_parameter("device_name", m_device_name);
-    declare_parameter("loop_rate", m_loop_rate);
-    declare_parameter("max_torque", m_max_torque);
-    declare_parameter("min_torque", m_min_torque);
-    declare_parameter("brake_position", m_brake_position);
-    declare_parameter("brake_torque", m_brake_torque);
-    declare_parameter("auto_centering_max_torque", m_auto_centering_max_torque);
-    declare_parameter("auto_centering_max_position", m_auto_centering_max_position);
-    declare_parameter("eps", m_eps);
-    declare_parameter("auto_centering", m_auto_centering);
+G29ForceFeedback::G29ForceFeedback() {
 
-    get_parameter("device_name", m_device_name);
-    get_parameter("loop_rate", m_loop_rate);
-    get_parameter("max_torque", m_max_torque);
-    get_parameter("min_torque", m_min_torque);
-    get_parameter("brake_position", m_brake_position);
-    get_parameter("brake_torque", m_brake_torque);
-    get_parameter("auto_centering_max_torque", m_auto_centering_max_torque);
-    get_parameter("auto_centering_max_position", m_auto_centering_max_position);
-    get_parameter("eps", m_eps);
-    get_parameter("auto_centering", m_auto_centering);
+    ros::NodeHandle n;
+    sub_target = n.subscribe("/ff_target", 1, &G29ForceFeedback::targetCallback, this);
+
+    n.getParam("device_name", m_device_name);
+    n.getParam("loop_rate", m_loop_rate);
+    n.getParam("max_torque", m_max_torque);
+    n.getParam("min_torque", m_min_torque);
+    n.getParam("brake_position", m_brake_position);
+    n.getParam("brake_torque_rate", m_brake_torque_rate);
+    n.getParam("auto_centering_max_torque", m_auto_centering_max_torque);
+    n.getParam("auto_centering_max_position", m_auto_centering_max_position);
+    n.getParam("eps", m_eps);
+    n.getParam("auto_centering", m_auto_centering);
 
     initDevice();
 
-    rclcpp::sleep_for(std::chrono::seconds(1));
-    timer = this->create_wall_timer(std::chrono::milliseconds((int)m_loop_rate*1000), 
-            std::bind(&G29ForceFeedback::loop,this));
+    ros::Duration(1).sleep();
+    timer = n.createTimer(ros::Duration(m_loop_rate), &G29ForceFeedback::loop, this);
 }
 
 G29ForceFeedback::~G29ForceFeedback() {
@@ -107,7 +91,7 @@ G29ForceFeedback::~G29ForceFeedback() {
 
 
 // update input event with timer callback
-void G29ForceFeedback::loop() {
+void G29ForceFeedback::loop(const ros::TimerEvent&) {
 
     struct input_event event;
     double last_position = m_position;
@@ -133,7 +117,7 @@ void G29ForceFeedback::loop() {
 
 void G29ForceFeedback::calcRotateForce(double &torque,
                                        double &attack_length,
-                                       const ros_g29_force_feedback::msg::ForceFeedback &target,
+                                       const g29_force_feedback::ForceFeedback &target,
                                        const double &current_position) {
 
     double diff = target.position - current_position;
@@ -145,7 +129,7 @@ void G29ForceFeedback::calcRotateForce(double &torque,
 
     } else if (fabs(diff) < m_brake_position) {
         m_is_brake_range = true;
-        torque = target.torque * m_brake_torque * -direction;
+        torque = target.torque * m_brake_torque_rate * -direction;
         attack_length = m_loop_rate;
 
     } else {
@@ -156,7 +140,7 @@ void G29ForceFeedback::calcRotateForce(double &torque,
 
 
 void G29ForceFeedback::calcCenteringForce(double &torque,
-                                          const ros_g29_force_feedback::msg::ForceFeedback &target,
+                                          const g29_force_feedback::ForceFeedback &target,
                                           const double &current_position) {
 
     double diff = target.position - current_position;
@@ -196,13 +180,13 @@ void G29ForceFeedback::uploadForce(const double &position,
 
 
 // get target information of wheel control from ros message
-void G29ForceFeedback::targetCallback(const ros_g29_force_feedback::msg::ForceFeedback::SharedPtr in_msg) {
+void G29ForceFeedback::targetCallback(const g29_force_feedback::ForceFeedback &in_msg) {
 
-    if (m_target.position == in_msg->position && m_target.torque == fabs(in_msg->torque)) {
+    if (m_target.position == in_msg.position && m_target.torque == fabs(in_msg.torque)) {
         m_is_target_updated = false;
 
     } else {
-        m_target = *in_msg;
+        m_target = in_msg;
         m_target.torque = fabs(m_target.torque);
         m_is_target_updated = true;
         m_is_brake_range = false;
@@ -308,12 +292,10 @@ int G29ForceFeedback::testBit(int bit, unsigned char *array) {
 }
 
 
-int main(int argc, char * argv[]){
-    rclcpp::init(argc, argv);
+int main(int argc, char **argv ){
 
-    auto g29_ff = std::make_shared<G29ForceFeedback>();
-    rclcpp::spin(g29_ff);
-
-    rclcpp::shutdown();
-    return 0;
+    ros::init(argc, argv, "g29_force_feedback_node");
+    G29ForceFeedback g29_ff;
+    ros::spin();
+    return(0);
 }

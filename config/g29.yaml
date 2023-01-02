@@ -1,12 +1,10 @@
-g29_force_feedback:
-  ros__parameters:
-    device_name: "/dev/input/event13"
-    loop_rate: 0.1
-    max_torque: 1.0
-    min_torque: 0.2
-    brake_torque: 0.2
-    brake_position: 0.1
-    auto_centering_max_torque: 0.3
-    auto_centering_max_position: 0.2
-    eps: 0.05
-    auto_centering: false
+device_name: "/dev/input/event24"
+loop_rate: 0.1
+max_torque: 1.0
+min_torque: 0.2
+brake_torque_rate: 0.2
+brake_position: 0.1
+auto_centering_max_torque: 0.3
+auto_centering_max_position: 0.2
+eps: 0.01
+auto_centering: false
