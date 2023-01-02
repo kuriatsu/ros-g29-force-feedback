@@ -49,7 +49,7 @@ class CarlaFFNode():
 def main(args=None):
 
     rospy.init_node("carla_ff_node)
-    carla_control_node = CarlaFFNode()
+    carla_ff_node = CarlaFFNode()
     rospy.spin()
 
 
