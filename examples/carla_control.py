@@ -23,7 +23,7 @@ import rclpy
 from rclpy.node import Node
 from ros_g29_force_feedback.msg import ForceFeedback
 
-class CarlaControlNode(Node):
+class CarlaFFNode(Node):
     def __init__(self, client):
         super().__init__("carla_ff_node")
         self.publisher = self.create_publisher(ForceFeedback,"/ff_target", 10)
@@ -52,9 +52,9 @@ def main(args=None):
     client = carla.Client("127.0.0.1", 2000)
     client.set_timeout(2.0)
 
-    carla_control_node = CarlaControlNode(client)
-    rclpy.spin(carla_control_node)
-    carla_control_node.destroy_node()
+    carla_ff_node = CarlaFFNode(client)
+    rclpy.spin(carla_ff_node)
+    carla_ff_node.destroy_node()
     rclpy.shutdown()
 
 
