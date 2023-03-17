@@ -23,21 +23,23 @@ import rospy
 from ros_g29_force_feedback.msg import ForceFeedback
 
 class CarlaFFNode():
-    def __init__(self, client):
-        self.client = carla.Client("127.0.0.1", 2000)
-        self.client.set_timeout(2.0)
+    def __init__(self):
+        client = carla.Client("127.0.0.1", 2000)
+        client.set_timeout(2.0)
         self.world = client.get_world()
         self.actor = self.get_hero()
 
-        self.publisher = rospy.Publisher("/ff_target", ForceFeedback, 10)
+        self.publisher = rospy.Publisher("/ff_target", ForceFeedback, queue_size=10)
         rospy.Timer(rospy.Duration(0.1), self.timer_cb)
 
     def get_hero(self):
         for actor in self.world.get_actors():
             if actor.attributes.get("role_name") in ["hero", "ego_vehicle"]:
                 return actor
+        raise RuntimeError("Could not find hero or ego_vehicle actor in the simulation.")
+
             
-    def timer_cb(self):
+    def timer_cb(self,event=None):
         out_msg = ForceFeedback()
         out_msg.header.stamp = rospy.Time.now()
         
@@ -48,7 +50,7 @@ class CarlaFFNode():
 
 def main(args=None):
 
-    rospy.init_node("carla_ff_node)
+    rospy.init_node("carla_ff_node")
     carla_ff_node = CarlaFFNode()
     rospy.spin()
 
