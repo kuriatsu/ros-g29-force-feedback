@@ -136,3 +136,6 @@ Name of topic variables changed.
 
 ### ROS2-Foxy integration
 Now available in ROS2-Foxy thanks to [JLBicho](https://github.com/JLBicho)
+
+## 2023-03-19
+Bag fix in ros1 branch thanks to [pedrohdsimoes](https://github.com/pedrohdsimoes)
