@@ -1,4 +1,4 @@
-device_name: "/dev/input/event24"
+device_name: "/dev/input/event14"
 loop_rate: 0.1
 max_torque: 1.0
 min_torque: 0.2

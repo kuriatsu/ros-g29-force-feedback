@@ -68,10 +68,20 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
     ```bash
     $ source /path/to/catkin_ws/install/setup.bash
     $ cd /path/to/catkin_ws
-    $ rosrun ros_g29_force_feedback  g29_force_feedback_node --ros-args --params-file /path/to/catkin_ws/install/ros_g29_force_feedback/share/ros_g29_force_feedback/config/g29.yaml
+    $ rosrun ros_g29_force_feedback  ros_g29_force_feedback_node --ros-args --params-file /path/to/catkin_ws/install/ros_g29_force_feedback/share/ros_g29_force_feedback/config/g29.yaml
     ```
+    > **Note**
+    
+    >if you get this error:
+    >[ERROR] [1563717737.344465687]: [registerPublisher] Failed to contact master at [localhost:11311]. Retrying...
 
-1. Throw message (It's better to use tab completion)  
+    >run:
+    >```bash
+    >$ roscore & rosparam set use_sim_time true
+    > ```
+    > and run ros node again
+
+4. Throw message (It's better to use tab completion)  
     ```bash
     $ rostopic pub /ff_target ros_g29_force_feedback/msg/ForceFeedback "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, position: 0.0, torque: 0.1}"
     ```
@@ -132,3 +142,10 @@ Name of topic variables changed.
 
 ### ROS2-Foxy integration
 Now available in ROS2-Foxy thanks to [JLBicho](https://github.com/JLBicho)
+
+## 2023-03-17
+
+### ROS1 fixed and tested
+Package working and example code working as well 
+
+Made by [pedrohdsimoes](https://github.com/pedrohdsimoes)
