@@ -69,17 +69,17 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
 
 2. Change `device_name` in config/g29.yaml to the device name you obtained in step 1
 
-3. run ros node
+3. Launch ros node
     ```bash
     $ source ros2_ws/install/setup.bash
     $ ros2 run ros_g29_force_feedback g29_force_feedback --ros-args --params-file ros2_ws/src/ros_g29_force_feedback/config/g29.yaml 
     ```
 
-1. Throw message (It's better to use tab completion)  
+1. Publish message (It's better to use tab completion)  
     ```bash
     $ ros2 topic pub /ff_target ros_g29_force_feedback/msg/ForceFeedback "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ''}, position: 0.3, torque: 0.5}"
     ```
-    Once the message is thrown, the wheel rotates to 0.3*<max_angle> (g29: max_angle=450° clockwise, -450° counterclockwise).
+    Once the message is published, the wheel rotates to 0.3*<max_angle> (g29: max_angle=450° clockwise, -450° counterclockwise).
     Publish rate is not restricted.
     
 # Parameter
