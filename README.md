@@ -139,3 +139,7 @@ Now available in ROS2-Foxy thanks to [JLBicho](https://github.com/JLBicho)
 
 ## 2023-03-19
 Bag fix in ros1 branch thanks to [pedrohdsimoes](https://github.com/pedrohdsimoes)
+
+# Reference
+https://www.kernel.org/doc/html/v5.4/input/ff.html
+https://github.com/flosse/linuxconsole/tree/master
