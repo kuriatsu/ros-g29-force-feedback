@@ -115,15 +115,17 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
 
 # Change Log
 
+## 2023-03-19
+Bag fix in ros1 branch thanks to [pedrohdsimoes](https://github.com/pedrohdsimoes)
+
 ## 2022-11-6
 ### examples added
 An example script of CARLA connection was added. Rotate the wheel according to the ego vehicle spawned in CARLA as shown in the GIF image.
 
-## 2020-10-10
-### changed
-PID-Constant mode can be changed dynamically!!
-Removed mode selection from rosparam.
-Rotation force is ignored when PID mode. (max force can be specified with rosparam (not dynamic))
+## 2022-04-21
+
+### ROS2-Foxy integration
+Now available in ROS2-Foxy thanks to [JLBicho](https://github.com/JLBicho)
 
 ## 2021-11-03
 ### Huge Improvement !!! 
@@ -132,13 +134,11 @@ Wheel stops at the specified position, then starts auto centering.
 Auto centering mode are set by rosparam in config/g29.yaml, not by rostopic.
 Name of topic variables changed.
 
-## 2022-04-21
-
-### ROS2-Foxy integration
-Now available in ROS2-Foxy thanks to [JLBicho](https://github.com/JLBicho)
-
-## 2023-03-19
-Bag fix in ros1 branch thanks to [pedrohdsimoes](https://github.com/pedrohdsimoes)
+## 2020-10-10
+### changed
+PID-Constant mode can be changed dynamically!!
+Removed mode selection from rosparam.
+Rotation force is ignored when PID mode. (max force can be specified with rosparam (not dynamic))
 
 # Reference
 https://www.kernel.org/doc/html/v5.4/input/ff.html  
