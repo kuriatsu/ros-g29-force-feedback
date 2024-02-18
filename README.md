@@ -1,6 +1,7 @@
 # ros-g29-force-feedback
 
-![GitHub forks](https://img.shields.io/github/forks/kuriatsu/ros-g29-force-feedback?style=social)   ![GitHub Repo stars](https://img.shields.io/github/stars/kuriatsu/ros-g29-force-feedback?style=social)  ![GitHub last commit](https://img.shields.io/github/last-commit/kuriatsu/ros-g29-force-feedback)    ![ros](https://img.shields.io/badge/ROS-Galactic-blue)    ![ubuntu](https://img.shields.io/badge/Ubuntu-20.04-purple)
+![GitHub forks](https://img.shields.io/github/forks/kuriatsu/ros-g29-force-feedback?style=flat&color=%#D78695)   ![GitHub Repo stars](https://img.shields.io/github/stars/kuriatsu/ros-g29-force-feedback?style=flat&color=%23FCCC06)  ![GitHub last commit](https://img.shields.io/github/last-commit/kuriatsu/ros-g29-force-feedback)    ![ros](https://img.shields.io/badge/ROS-Humble-blue)    ![ubuntu](https://img.shields.io/badge/Ubuntu-22.04-purple)
+
 
 
 # Overview
