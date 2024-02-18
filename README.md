@@ -28,13 +28,15 @@ This is useful for the user interface of autonomous driving, driving simulator l
     |ROS1|--|--|
     |Kinetic|tested|no|
     |Melodic|tested|no|
+    |Noetic|tested|no|
     |ROS2|--|--|
     |Dashing|no|no|
     |Foxy|tested|no|
     |Galactic|tested|no|
+    |Humble|no|no|
 
-# Requirement
-* ubuntu18/20
+# Requirement of `master` branch
+* ubuntu18-22
 * ROS2
 * Logitech G29 Driving Force Racing Wheel (Planning to test with g923)
 
