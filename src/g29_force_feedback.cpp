@@ -89,7 +89,7 @@ G29ForceFeedback::G29ForceFeedback()
     initDevice();
 
     rclcpp::sleep_for(std::chrono::seconds(1));
-    timer = this->create_wall_timer(std::chrono::milliseconds((int)m_loop_rate*1000), 
+    timer = this->create_wall_timer(std::chrono::milliseconds((int)(m_loop_rate*1000)), 
             std::bind(&G29ForceFeedback::loop,this));
 }
 
