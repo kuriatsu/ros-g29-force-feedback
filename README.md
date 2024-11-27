@@ -100,12 +100,17 @@ If you cannot get `CONFIG_LOGIWHEELS_FF=y`, try to find patch or use latest kern
 ![ros_g29_ff](https://user-images.githubusercontent.com/38074802/167057448-1fa21956-ae91-4e51-bee4-1fcdc05cae51.png)
 
 
-# Contribution
-1. Fork it (https://github.com/kuriatsu/g29-force-feedback.git)
-1. Create your feature branch (git checkout -b my-new-feature)
-1. Commit your changes (git commit -am 'Add some feature')
-1. Push to the branch (git push origin my-new-feature)
-1. Create new Pull Request
+# Troubleshoot
+### No module named 'ros_g29_force_feedback' when run carla_control.py
+* If you use conda, deactivate and try again. rclpy and conda seem to conflict.
+* If you have multiple ros2 versions, source one of them or remove one of them.
+
+### Cannot open the device
+Double check the output of `cat /proc/bus/input/devices` and update `device_name` in config/g29.yaml.
+Reboot can change the ID.
+
+### config.yaml is not refrected to ros
+Try to update the parameters inside the source code.
 
 
 # Author
